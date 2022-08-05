@@ -1,13 +1,13 @@
 const apiReferenceModule = 'startup';
 const Promise            = require('bluebird');
 const config             = require('config');
-const MongoClient        = require('mongodb').MongoClient;
+const Mongoose           = require('mongoose');
 const logging            = require('../logging/logger');
 const http               = require('http');
 
 
 exports.initializeServer = initializeServer;
-
+var db;
 function startHttpServer(port) {
     return new Promise((resolve, reject) => {
         var server = http.createServer(app).listen(port, function () {
@@ -28,7 +28,6 @@ function initializeServer() {
             db = yield initializeConnection(connectionConfig);
             let port = process.env.PORT || config.get('PORT');
             yield startHttpServer(port);
-
         })().then((data) => {
             resolve(data);
         }, (error) => {
@@ -40,13 +39,13 @@ function initializeServer() {
 
 function initializeConnection(connectionConfig) {
     return new Promise((resolve, reject) => {
-      MongoClient.connect(connectionConfig, {useNewUrlParser: true, useUnifiedTopology: true}, function(err, database) {
-        if (err) {
-            console.error('Mongo connection error', err);
-            return reject(err);
-          }
-          console.error("################## Mongo Connected ##################");
-          return resolve(database);
-      });
+        Mongoose.connect(connectionConfig, {useNewUrlParser : true, useUnifiedTopology : true}, function(err, database) {
+            if(err) {
+                console.error("Mongoose connection error", err)
+                reject(err)
+            }
+            console.log("############# Mongo Connected ################");
+            resolve(database)
+        })
     });
 }

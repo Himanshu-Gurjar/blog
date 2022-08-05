@@ -3,6 +3,7 @@ const apiReferenceModule = "blogs"
 const Mongo              = require('./mongo');
 const responses          = require('../utils/responses');
 const constants          = require('../utils/constants');
+const moment             = require('moment');
 
 exports.getBlogs    = getBlogs;
 exports.getBlogById = getBlogById;
@@ -19,12 +20,12 @@ async function getBlogs(req, res) {
     }
     try {
         let condition = {}
-        if(req.body) {
-            let creation_date = req.body.creation_date ? req.body.creation_date : "";
+        if(req.query) {
+            let creation_date = req.query.creation_date ? req.query.creation_date : "";
             if (creation_date && moment(creation_date, 'YYYY-MM-DD',true).isValid()) {
                 condition.createdAt = {
-                    $gte: ISODate(creation_date),
-                    $lt: ISODate(creation_date)
+                    $gte: `${creation_date}T00:00:00.000Z`,
+                    $lt: `${creation_date}T23:59:59.999Z`
                 }
             }
         }
@@ -47,7 +48,6 @@ async function getBlogById(req, res) {
         let data = await Mongo.getData(apiReference, {_id : id})
         return responses.actionCompleteResponse(res, data);
     } catch (error) {
-        console.log("err========", error);
         return responses.sendError(res);
     }
 }

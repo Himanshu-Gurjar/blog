@@ -5,7 +5,7 @@ exports.parameterMissingResponse = parameterMissingResponse;
 exports.actionCompleteResponse   = actionCompleteResponse;
 exports.sendError                = sendError;
 
-function actionCompleteResponse(res, data, mgs, values) {
+function actionCompleteResponse(res, data, msg, values) {
     let response = {
         message: msg || constants.responseMessages.ACTION_COMPLETE,
         status: constants.responseFlags.ACTION_COMPLETE,

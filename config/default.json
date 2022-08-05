@@ -1,0 +1,12 @@
+{
+    "PORT": 3001,
+    "databaseSettings": {
+        "user": "himanshu",
+        "database": "blog-posts",
+        "mongo_db_connection": "mongodb+srv://himanshu_013:Himanshu123@cluster0.pse1v.mongodb.net/?retryWrites=true&w=majority",
+        "blog_posts" : "blog-posts"
+    },
+    "mongoCollections" : {
+        "blogs" : "blogs"
+    }
+}

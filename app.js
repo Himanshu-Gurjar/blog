@@ -1,6 +1,7 @@
 const express           = require('express');
 const config            = require('config');
 const startupService    = require('./services/startupservices');
+const methodOverride    = require('method-override');
 const blog              = require('./routes/blog');
 const blogvalidator     = require('./validators/blogPostValidator');
 
@@ -25,11 +26,11 @@ app.use(function (req, res, next) {
     next();
 });
 
+app.use(methodOverride('_method'));
 
-app.get('/',blogvalidator.getAllBlogsValidator, blog.getBlogs);
+app.get('/', blog.getBlogs);
 app.get('/get_blog', blogvalidator.IdValidatorQuery, blog.getBlogById);
-app.post('/create_blog', blogvalidator.validateBlogDetails, blog.createBlog);
+app.post('/add_blog', blogvalidator.validateBlogDetails, blog.addBlog);
 app.put('/update_blog', blogvalidator.ValidateUpdateBlog, blog.updateBlog)
 app.delete('/delete_blog/:id', blogvalidator.IdValidatorParams, blog.deleteBlog);
-
-startupService.initializeServer();
+db = startupService.initializeServer();

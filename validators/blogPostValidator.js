@@ -3,15 +3,12 @@ const logging               = require('../logging/logger');
 const responses             = require('../utils/responses');
 const Joi                   = require('joi');
 const _                     = require('underscore');
-const moment                = require('moment')
 const utils                 = require('../utils/utils')
 
-exports.validateBlogDetails     = validateBlogDetails;
-exports.getAllBlogsValidator    = getAllBlogsValidator
-exports.IdValidatorQuery        = IdValidatorQuery;
-exports.ValidateUpdateBlog      = ValidateUpdateBlog;
-exports.IdValidatorParams       = IdValidatorParams;
-
+exports.validateBlogDetails = validateBlogDetails;
+exports.IdValidatorQuery    = IdValidatorQuery;
+exports.ValidateUpdateBlog  = ValidateUpdateBlog;
+exports.IdValidatorParams   = IdValidatorParams;
 
 function validateFields(apiReference, object, res, schema) {
     if(_.isEmpty(object)) {
@@ -33,28 +30,6 @@ function validateFields(apiReference, object, res, schema) {
     return true;
 }
 
-function getAllBlogsValidator(req, res, next) {
-    let apiReference = {
-        module: apiReferenceModule,
-        api: "get_all_blogs_validator"
-    };
-    if (!_.isEmpty(req.query) && req.query.creation_date) {
-        let creation_date = req.query.creation_date;
-        if(moment(creation_date, 'YYYY-MM-DD',true).isValid())
-            req.query.filter = {
-                createdAt : {
-                    $gte: `${creation_date}T00:00:00.000Z`,
-                    $lt: `${creation_date}T23:59:59.999Z`
-                }
-            }
-        else {
-            logging.logError(apiReference, {EVENT : "DATE FORMAT IS NOT VALID", DATE : creation_date});
-            responses.parameterMissingResponse(res, "Date format is not valid");
-        }
-    }
-
-    next()
-}
 
 function validateBlogDetails(req, res, next) {
     let apiReference = {
@@ -67,6 +42,7 @@ function validateBlogDetails(req, res, next) {
         content     : Joi.string().required(),
         description : Joi.string().optional()
     })
+    console.log("req=============", req.body, req);
     if (validateFields(apiReference, req.body, res, schema)) next();
 
 }

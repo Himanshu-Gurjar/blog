@@ -3,37 +3,27 @@ const apiReferenceModule = "blogs"
 const Mongo              = require('./mongo');
 const responses          = require('../utils/responses');
 const constants          = require('../utils/constants');
-const moment             = require('moment');
-
+const logging            = require('../logging/logger');
 exports.getBlogs    = getBlogs;
 exports.getBlogById = getBlogById;
-exports.addBlog     = addBlog;
+exports.createBlog  = createBlog;
 exports.updateBlog  = updateBlog;
 exports.deleteBlog  = deleteBlog;
 
-
+const mongo = new Mongo();
 
 async function getBlogs(req, res) {
     let apiReference = {
         module: apiReferenceModule,
         api: "get_blogs"
     }
+    let filter = req.query.filter || {}
     try {
-        let condition = {}
-        if(req.query) {
-            let creation_date = req.query.creation_date ? req.query.creation_date : "";
-            if (creation_date && moment(creation_date, 'YYYY-MM-DD',true).isValid()) {
-                condition.createdAt = {
-                    $gte: `${creation_date}T00:00:00.000Z`,
-                    $lt: `${creation_date}T23:59:59.999Z`
-                }
-            }
-        }
-        
-        let data = await Mongo.getData(apiReference, condition);    
+        let data = await mongo.getData(apiReference, filter);    
         return responses.actionCompleteResponse(res, data);
     } catch (error) {
-        return responses.sendError(res);
+        logging.logError(apiReference, {FILTER : filter, ERROR : error})
+        return responses.internalErrorMessage(res);
     }
 
 }
@@ -45,14 +35,15 @@ async function getBlogById(req, res) {
     }
     let id = req.query.id;
     try {
-        let data = await Mongo.getData(apiReference, {_id : id})
+        let data = await mongo.getData(apiReference, {_id : id})
         return responses.actionCompleteResponse(res, data);
     } catch (error) {
-        return responses.sendError(res);
+        logging.logError(apiReference, {_ID : id, ERROR : error})
+        return responses.internalErrorMessage(res);
     }
 }
 
-async function addBlog(req, res) {
+async function createBlog(req, res) {
     let apiReference = {
         module: apiReferenceModule,
         api : "add_blog"
@@ -65,10 +56,11 @@ async function addBlog(req, res) {
     }
 
     try {
-        await Mongo.insert(apiReference, insertObj)
+        await mongo.insert(apiReference, insertObj)
         return responses.actionCompleteResponse(res, [], "Blog Created");
     } catch (error) {
-        return responses.sendError(res);
+        logging.logError(apiReference, {DATA : insertObj, ERROR : error})
+        return responses.internalErrorMessage(res);
     }
 }
 
@@ -79,18 +71,17 @@ async function updateBlog(req, res) {
     }
     try {
         let id = req.body.id;
-
         let dataToUpdate = {
             title : req.body.title,
             description : req.body.description ? req.body.description : "",
             content : req.body.content
         }
-
-        await Mongo.updateData(apiReference, dataToUpdate, id)
+        await mongo.updateData(apiReference, dataToUpdate, id)
         return responses.actionCompleteResponse(res, [], "Data Updated Successfully");
 
     } catch (error) {
-        return responses.sendError(res);
+        logging.logError(apiReference, {REQ_BODY : req.body, ERROR : error});
+        return responses.internalErrorMessage(res);
     }   
 }
 
@@ -102,10 +93,11 @@ async function deleteBlog(req, res) {
     }
     try {
         let id = req.params.id;
-        await Mongo.deleteBlog(apiReference, id);
+        await mongo.deleteBlog(apiReference, id);
         return responses.actionCompleteResponse(res);
     } catch (error) {
-        return responses.sendError(res);
+        logging.logError(apiReference, {REQ_BODY : req.params, ERROR : error});
+        return responses.internalErrorMessage(res);
     }
 
 }

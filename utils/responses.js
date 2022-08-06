@@ -4,7 +4,6 @@ const constants  = require('./constants');
 exports.parameterMissingResponse = parameterMissingResponse;
 exports.actionCompleteResponse   = actionCompleteResponse;
 exports.sendError                = sendError;
-exports.internalErrorMessage     = internalErrorMessage;
 
 function actionCompleteResponse(res, data, msg, values) {
     let response = {
@@ -29,18 +28,9 @@ function parameterMissingResponse(res, err, data) {
 
 function sendError(res, data, message) {
     let response = {
-        message: message || constants.responseMessages.ERROR,
-        status: constants.responseFlags.ERROR,
+        message: message || constants.responseMessages.ERROR_IN_EXECUTION,
+        status: constants.responseFlags.ERROR_IN_EXECUTION,
         data: data || {}
     };
     res.send(JSON.stringify(response));
 }
-
-function internalErrorMessage(res) {
-    var response = {
-      message: constants.responseMessages.INTERNAL_SERVER_ERROR,
-      status : constants.responseFlags.INTERNAL_SERVER_ERROR,
-      data   : {}
-    };
-    res.send(JSON.stringify(response));
-  }

@@ -1,7 +1,7 @@
 
 const apiReferenceModule = "blogs"
 const Mongo              = require('./mongo');
-const responses          = require('../utils/responses');
+const Responses          = require('../utils/responses');
 const constants          = require('../utils/constants');
 const logging            = require('../logging/logger');
 exports.getBlogs    = getBlogs;
@@ -11,6 +11,7 @@ exports.updateBlog  = updateBlog;
 exports.deleteBlog  = deleteBlog;
 
 const mongo = new Mongo();
+const responses = new Responses();
 
 async function getBlogs(req, res) {
     let apiReference = {
@@ -46,7 +47,7 @@ async function getBlogById(req, res) {
 async function createBlog(req, res) {
     let apiReference = {
         module: apiReferenceModule,
-        api : "add_blog"
+        api : "create_blog"
     }
 
     let insertObj = {
@@ -56,8 +57,8 @@ async function createBlog(req, res) {
     }
 
     try {
-        await mongo.insert(apiReference, insertObj)
-        return responses.actionCompleteResponse(res, [], "Blog Created");
+        let result = await mongo.insert(apiReference, insertObj)
+        return responses.actionCompleteResponse(res, {Id : result._id}, constants.responseMessages.BLOG_CREATED);
     } catch (error) {
         logging.logError(apiReference, {DATA : insertObj, ERROR : error})
         return responses.internalErrorMessage(res);
@@ -76,8 +77,11 @@ async function updateBlog(req, res) {
             description : req.body.description ? req.body.description : "",
             content : req.body.content
         }
-        await mongo.updateData(apiReference, dataToUpdate, id)
-        return responses.actionCompleteResponse(res, [], "Data Updated Successfully");
+        let result = await mongo.update(apiReference, dataToUpdate, id)
+        if(result && result.matchedCount === 0) {
+            return responses.noDataFound(res);
+        }
+        return responses.actionCompleteResponse(res, [], constants.responseMessages.DATA_UPDATED);
 
     } catch (error) {
         logging.logError(apiReference, {REQ_BODY : req.body, ERROR : error});
@@ -93,7 +97,7 @@ async function deleteBlog(req, res) {
     }
     try {
         let id = req.params.id;
-        await mongo.deleteBlog(apiReference, id);
+        await mongo.delete(apiReference, id);
         return responses.actionCompleteResponse(res);
     } catch (error) {
         logging.logError(apiReference, {REQ_BODY : req.params, ERROR : error});

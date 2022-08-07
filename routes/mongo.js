@@ -1,20 +1,20 @@
 const logging           = require('../logging/logger');
-const Blog              = require('../models/blogs');
-
-module.exports = class CRUD {
+const ObjectId          = require('mongodb').ObjectId;
+const constants         = require('../utils/constants');
+module.exports = class Blog {
     constructor() {
         this.mongoCollection = require('../models/blogs');
     }
 
-    getData(apiReference, condition={}) {
+    getData(apiReference, filter={}) {
         return new Promise((resolve, reject) => {
-            this.mongoCollection.find(condition).sort({createdAt : -1})
+            this.mongoCollection.find(filter).sort({createdAt : -1})
             .then(result => {
-                logging.log(apiReference, { EVENT: `Find data in `, DATA: result, FILTER : condition}); 
+                logging.log(apiReference, { EVENT: "GETTING DATA FOR BLOG", DATA: result, FILTER : filter}); 
                 resolve(result)
             })
             .catch(err => {
-                logging.logError(apiReference, { DATA: {condition}, ERROR: err, EVENT: `Error in find data in ` });
+                logging.logError(apiReference, { DATA: filter, ERROR: err, EVENT: "ERROR IN GETTING DATA" });
                 reject(err)
             })
         })
@@ -25,11 +25,11 @@ module.exports = class CRUD {
             const blog = new this.mongoCollection(data)
             blog.save()
             .then(result => {
-                logging.log(apiReference, { EVENT: "insert data", DATA: result}); 
+                logging.log(apiReference, { EVENT: "INSERTING BLOG DATA ", DATA: result}); 
                 resolve(result)
             })
             .catch(err => {
-                logging.logError(apiReference, {ERROR: err, EVENT: "Error in inserting data"  });
+                logging.logError(apiReference, {ERROR: err, EVENT: "ERROR IN INSERTING BLOG DATA"  });
                 reject(err)
             })
         })
@@ -37,13 +37,13 @@ module.exports = class CRUD {
     
     update(apiReference, dataToUpdate, id) {
         return new Promise((resolve, reject) => {
-            this.mongoCollection.findByIdAndUpdate(id, {$set : dataToUpdate})
+            this.mongoCollection.updateOne({_id : id}, {$set : dataToUpdate})
             .then(result => {
-                logging.log(apiReference, { EVENT: "upating data", DATA: result}); 
+                logging.log(apiReference, { EVENT: "UPDATING BLOG DATA", DATA: result}); 
                 resolve(result)
             })
             .catch(err => {
-                logging.logError(apiReference, {ERROR: err, EVENT: "Error in updating data"  });
+                logging.logError(apiReference, {ERROR: err, EVENT: "ERROR IN UPDATING BLOG DATA"  });
                 reject(err)
             })
         })
@@ -53,12 +53,12 @@ module.exports = class CRUD {
         return new Promise((resolve, reject) => {
             this.mongoCollection.findByIdAndDelete(id)
             .then(result => {
-                logging.log(apiReference, { EVENT: "data delete successfully", DATA : id});
+                logging.log(apiReference, { EVENT: "DATA DELETED", DATA : id});
                 resolve(result)
             })
             .catch(err => {
-                logging.logError(apiReference, {ERROR: err, EVENT: "Error in deleting data in", DATA : id });
-                reject(err)
+                logging.logError(apiReference, {ERROR: err, EVENT: "ERROR IN DELETING DATA", DATA : id });
+                reject(err);
             })
         })
     }

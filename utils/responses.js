@@ -1,46 +1,56 @@
 
 const constants  = require('./constants');
 
-exports.parameterMissingResponse = parameterMissingResponse;
-exports.actionCompleteResponse   = actionCompleteResponse;
-exports.sendError                = sendError;
-exports.internalErrorMessage     = internalErrorMessage;
+// exports.parameterMissingResponse = parameterMissingResponse;
+// exports.actionCompleteResponse   = actionCompleteResponse;
+// exports.sendError                = sendError;
+// exports.internalErrorMessage     = internalErrorMessage;
+// exports.validationError          = validationError;
 
-function actionCompleteResponse(res, data, msg, values) {
-    let response = {
-        message: msg || constants.responseMessages.ACTION_COMPLETE,
-        status: constants.responseFlags.ACTION_COMPLETE,
-        data: data || {}
-    };
-    if (values) {
-        response.values = values;
+
+module.exports = class Responses {
+
+    getResponse(message, status, data) {
+        return {message : message, status : status, data : data || {}}
     }
-    res.send(JSON.stringify(response));
-}
 
-function parameterMissingResponse(res, err, data) {
-    let response = {
-        message: err || constants.responseMessages.PARAMETER_MISSING,
-        status: constants.responseFlags.PARAMETER_MISSING,
-        data: data || {}
-    };
-    res.send(JSON.stringify(response));
-}
+    actionCompleteResponse(res, data, mgs, values) {
+        this.response = this.getResponse(mgs || constants.responseMessages.ACTION_COMPLETE, 
+                                                constants.responseFlags.ACTION_COMPLETE, data);
+        if (values) {
+            this.response.values = values;
+        }
+        res.send(JSON.stringify(this.response));
+    }
 
-function sendError(res, data, message) {
-    let response = {
-        message: message || constants.responseMessages.ERROR,
-        status: constants.responseFlags.ERROR,
-        data: data || {}
-    };
-    res.send(JSON.stringify(response));
-}
+    parameterMissingResponse(res, err, data) {
+        this.response = this.getResponse(err || constants.responseMessages.PARAMETER_MISSING, 
+                                                constants.responseFlags.PARAMETER_MISSING, data);
+        res.send(JSON.stringify(this.response));
+    }
 
-function internalErrorMessage(res) {
-    var response = {
-      message: constants.responseMessages.INTERNAL_SERVER_ERROR,
-      status : constants.responseFlags.INTERNAL_SERVER_ERROR,
-      data   : {}
-    };
-    res.send(JSON.stringify(response));
-  }
+    noDataFound(res) {
+        this.response = this.getResponse(constants.responseMessages.NO_DATA_FOUND, constants.responseFlags.NO_DATA_FOUND);
+        res.send(JSON.stringify(this.response));
+    }
+
+    sendError(res, message) {
+        this.response = this.getResponse(message || constants.responseMessages.ERROR,
+                                                    constants.responseFlags.ERROR);
+    
+        res.send(JSON.stringify(this.response));
+    }
+
+    validationError(res, message) {
+        this.response = this.getResponse(message || constants.responseMessages.VALIDATION_ERROR,
+                                                    constants.responseFlags.VALIDATION_ERROR);
+        
+        res.send(JSON.stringify(this.response));
+    }
+
+    internalErrorMessage(res) {
+        this.response = this.getResponse(constants.responseMessages.INTERNAL_SERVER_ERROR, constants.responseFlags.INTERNAL_SERVER_ERROR)
+        
+        res.send(JSON.stringify(this.response));
+    }
+}

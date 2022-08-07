@@ -1,10 +1,12 @@
 const apiReferenceModule    = 'blogPostValidator';
 const logging               = require('../logging/logger');
-const responses             = require('../utils/responses');
+const Responses             = require('../utils/responses');
+const constants             = require('../utils/constants');
 const Joi                   = require('joi');
 const _                     = require('underscore');
-const moment                = require('moment')
-const utils                 = require('../utils/utils')
+const moment                = require('moment');
+const utils                 = require('../utils/utils');
+const ObjectId              = require('mongodb').ObjectId;
 
 exports.validateBlogDetails     = validateBlogDetails;
 exports.getAllBlogsValidator    = getAllBlogsValidator
@@ -12,6 +14,7 @@ exports.IdValidatorQuery        = IdValidatorQuery;
 exports.ValidateUpdateBlog      = ValidateUpdateBlog;
 exports.IdValidatorParams       = IdValidatorParams;
 
+const responses = new Responses();
 
 function validateFields(apiReference, object, res, schema) {
     if(_.isEmpty(object)) {
@@ -27,7 +30,7 @@ function validateFields(apiReference, object, res, schema) {
                 : 'Parameter missing or parameter type is wrong';
 
         logging.logError(apiReference, validation.error.details);
-        responses.parameterMissingResponse(res, errorReason);
+        responses.validationError(res, errorReason);
         return false;
     }
     return true;
@@ -49,7 +52,7 @@ function getAllBlogsValidator(req, res, next) {
             }
         else {
             logging.logError(apiReference, {EVENT : "DATE FORMAT IS NOT VALID", DATE : creation_date});
-            responses.parameterMissingResponse(res, "Date format is not valid");
+            return responses.validationError(res, constants.responseMessages.INVALID_DATE);
         }
     }
 
@@ -94,7 +97,11 @@ function IdValidatorParams(req, res, next) {
         id: Joi.string().required()
     })
 
-    if (validateFields(apiReference, req.params, res, schema)) next();
+    if(validateFields(apiReference, req.params, res, schema)) {
+        if(isInvalidId(apiReference, req.params.id)) return responses.validationError(res, constants.responseMessages.INVALID_ID);
+        next()
+    }
+    
 }
 
 function ValidateUpdateBlog(req, res, next) {
@@ -102,9 +109,23 @@ function ValidateUpdateBlog(req, res, next) {
         module: apiReferenceModule,
         api: "ValidateUpdateBlog"
     };
-    if (utils.checkBlankField([req.body.id, req.body.title, req.body.content])) {
-        return responses.parameterMissingResponse(res);
-    }
+    let id = req.body.id;
+    let title = req.body.title;
+    let content = req.body.content;
+
+    if (utils.checkBlankField([id, title, content])) return responses.parameterMissingResponse(res);
+
+    if (isInvalidId(apiReference,id)) return responses.validationError(res, constants.responseMessages.INVALID_ID);
+    
     next();
 
+}
+
+function isInvalidId(apiReference,id) {
+    
+    if(!ObjectId.isValid(id)) {
+        logging.logError(apiReference, {ERROR: "Invalid ID", DATA : id });
+        return true
+    }
+    return false
 }

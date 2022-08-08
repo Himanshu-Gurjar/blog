@@ -27,9 +27,9 @@ app.use(function (req, res, next) {
 
 
 app.get('/',blogvalidator.getAllBlogsValidator, blog.getBlogs);
-app.get('/get_blog', blogvalidator.IdValidatorQuery, blog.getBlogById);
+app.get('/get_blog', blogvalidator.idValidatorQuery, blog.getBlogById);
 app.post('/create_blog', blogvalidator.validateBlogDetails, blog.createBlog);
-app.put('/update_blog', blogvalidator.ValidateUpdateBlog, blog.updateBlog)
-app.delete('/delete_blog/:id', blogvalidator.IdValidatorParams, blog.deleteBlog);
+app.put('/update_blog', blogvalidator.validateUpdateBlog, blog.updateBlog)
+app.delete('/delete_blog/:id', blogvalidator.idValidatorParams, blog.deleteBlog);
 
 startupService.initializeServer();

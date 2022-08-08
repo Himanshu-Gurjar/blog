@@ -7,16 +7,27 @@ const http               = require('http');
 
 
 exports.initializeServer = initializeServer;
-var db;
+/**
+ * Creates Http server on given port
+ * 
+ * @param {number} port The port on which server will listen.
+ */
 function startHttpServer(port) {
     return new Promise((resolve, reject) => {
-        var server = http.createServer(app).listen(port, function () {
-            console.log(`################## Express connected on port ${port} ##################`);
-            resolve(server);
+        let apiReference = {
+            module : apiReferenceModule, 
+            api : "start_http_server"
+        }
+        http.createServer(app).listen(port, function () {
+            logging.log(apiReference, {EVENT : `STARTING HTTP SERVER ON PORT ${port}`});
+            resolve();
         });
     });
 }
 
+/**
+ * Initialize database connection and http server
+ */
 function initializeServer() {
     return new Promise((resolve, reject) => {
         let apiReference = {
@@ -25,7 +36,7 @@ function initializeServer() {
         };
         Promise.coroutine(function* () {
             let connectionConfig = config.get('databaseSettings.mongo_db_connection');
-            db = yield initializeConnection(connectionConfig);
+            yield initializeConnection(connectionConfig, apiReference);
             let port = process.env.PORT || config.get('PORT');
             yield startHttpServer(port);
         })().then((data) => {
@@ -37,14 +48,20 @@ function initializeServer() {
     })
 }
 
-function initializeConnection(connectionConfig) {
+/**
+ * Creates mongoose connection for given mongodb url
+ * 
+ * @param {string} connectionConfig The url of mongodb on which connection will be created.
+ * @param {object} apiReference To log the data related to api from where the function get called.
+ */
+function initializeConnection(connectionConfig, apiReference) {
     return new Promise((resolve, reject) => {
         Mongoose.connect(connectionConfig, {useNewUrlParser : true, useUnifiedTopology : true}, function(err, database) {
             if(err) {
-                console.error("Mongoose connection error", err)
+                logging.logError(apiReference, {EVENT : "MONGOOSE CONNECTION ERROR", ERROR : err});
                 reject(err)
             }
-            console.log("############# Mongo Connected ################");
+            logging.log(apiReference, {EVENT : "MONGOOSE CONNECTED SUCCESSFULLY"});
             resolve(database)
         })
     });

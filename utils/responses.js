@@ -1,13 +1,5 @@
 
 const constants  = require('./constants');
-
-// exports.parameterMissingResponse = parameterMissingResponse;
-// exports.actionCompleteResponse   = actionCompleteResponse;
-// exports.sendError                = sendError;
-// exports.internalErrorMessage     = internalErrorMessage;
-// exports.validationError          = validationError;
-
-
 module.exports = class Responses {
 
     getResponse(message, status, data) {

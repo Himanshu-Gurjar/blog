@@ -18,6 +18,6 @@ const BlogSchema = new Schema({
 }, {timestamps : true});
 
 const blog_posts = mongoose.connection.useDb(config.get('databaseSettings.blog_posts'))
-const Blog = blog_posts.model("blogs", BlogSchema);
+const Blog = blog_posts.model(config.get('mongoCollections.blogs'), BlogSchema);
 
 module.exports = Blog;

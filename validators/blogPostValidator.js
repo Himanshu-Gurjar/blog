@@ -10,12 +10,15 @@ const ObjectId              = require('mongodb').ObjectId;
 
 exports.validateBlogDetails     = validateBlogDetails;
 exports.getAllBlogsValidator    = getAllBlogsValidator
-exports.IdValidatorQuery        = IdValidatorQuery;
-exports.ValidateUpdateBlog      = ValidateUpdateBlog;
-exports.IdValidatorParams       = IdValidatorParams;
+exports.idValidatorQuery        = idValidatorQuery;
+exports.validateUpdateBlog      = validateUpdateBlog;
+exports.idValidatorParams       = idValidatorParams;
 
 const responses = new Responses();
 
+/**
+ * Valiate given obejct according to the schema
+ */
 function validateFields(apiReference, object, res, schema) {
     if(_.isEmpty(object)) {
         logging.logError(apiReference, "Blank Object passed");
@@ -74,7 +77,7 @@ function validateBlogDetails(req, res, next) {
 
 }
 
-function IdValidatorQuery(req, res, next) {
+function idValidatorQuery(req, res, next) {
     let apiReference = {
         module: apiReferenceModule,
         api: "id_validator_for_query"
@@ -87,7 +90,7 @@ function IdValidatorQuery(req, res, next) {
     if (validateFields(apiReference, req.query, res, schema)) next();
 }
 
-function IdValidatorParams(req, res, next) {
+function idValidatorParams(req, res, next) {
     let apiReference = {
         module: apiReferenceModule,
         api: "id_validator_for_params"
@@ -104,10 +107,10 @@ function IdValidatorParams(req, res, next) {
     
 }
 
-function ValidateUpdateBlog(req, res, next) {
+function validateUpdateBlog(req, res, next) {
     let apiReference = {
         module: apiReferenceModule,
-        api: "ValidateUpdateBlog"
+        api: "validateUpdateBlog"
     };
     let id = req.body.id;
     let title = req.body.title;

@@ -3,6 +3,9 @@ const config            = require('config');
 const startupService    = require('./services/startupservices');
 const blog              = require('./routes/blog');
 const blogvalidator     = require('./validators/blogPostValidator');
+const log4js            = require('log4js');
+const logger            = require('./logging/loggerConfig').logger;
+
 
 app = express();
 app.set('port', process.env.PORT || config.get('PORT'));
@@ -25,6 +28,15 @@ app.use(function (req, res, next) {
     next();
 });
 
+
+app.use(
+    log4js.connectLogger(logger, {
+      level: "info",
+      format: (req, res, format) => {
+        return format(`:method :url `)
+      }
+    })
+);
 
 app.get('/',blogvalidator.getAllBlogsValidator, blog.getBlogs);
 app.get('/get_blog', blogvalidator.idValidatorQuery, blog.getBlogById);

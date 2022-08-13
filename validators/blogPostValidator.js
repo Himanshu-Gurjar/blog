@@ -1,5 +1,5 @@
 const apiReferenceModule    = 'blogPostValidator';
-const logging               = require('../logging/logger');
+const logger                = require('../logging/loggerConfig').logger;
 const Responses             = require('../utils/responses');
 const constants             = require('../utils/constants');
 const Joi                   = require('joi');
@@ -21,7 +21,7 @@ const responses = new Responses();
  */
 function validateFields(apiReference, object, res, schema) {
     if(_.isEmpty(object)) {
-        logging.logError(apiReference, "Blank Object passed");
+        logger.error(apiReference, "Blank Object passed");
         responses.parameterMissingResponse(res);
         return false;
     }
@@ -32,7 +32,7 @@ function validateFields(apiReference, object, res, schema) {
                 ? validation.error.details[0].message
                 : 'Parameter missing or parameter type is wrong';
 
-        logging.logError(apiReference, validation.error.details);
+        logger.error(apiReference, validation.error.details);
         responses.validationError(res, errorReason);
         return false;
     }
@@ -54,7 +54,7 @@ function getAllBlogsValidator(req, res, next) {
                 }
             }
         else {
-            logging.logError(apiReference, {EVENT : "DATE FORMAT IS NOT VALID", DATE : creation_date});
+            logger.error(apiReference, {EVENT : "DATE FORMAT IS NOT VALID", DATE : creation_date});
             return responses.validationError(res, constants.responseMessages.INVALID_DATE);
         }
     }
@@ -127,7 +127,7 @@ function validateUpdateBlog(req, res, next) {
 function isInvalidId(apiReference,id) {
     
     if(!ObjectId.isValid(id)) {
-        logging.logError(apiReference, {ERROR: "Invalid ID", DATA : id });
+        logger.error(apiReference, {ERROR: "Invalid ID", DATA : id });
         return true
     }
     return false

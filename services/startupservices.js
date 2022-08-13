@@ -2,7 +2,7 @@ const apiReferenceModule = 'startup';
 const Promise            = require('bluebird');
 const config             = require('config');
 const Mongoose           = require('mongoose');
-const logging            = require('../logging/logger');
+const logging            = require('../logging/loggerConfig').logger;
 const http               = require('http');
 
 
@@ -19,7 +19,7 @@ function startHttpServer(port) {
             api : "start_http_server"
         }
         http.createServer(app).listen(port, function () {
-            logging.log(apiReference, {EVENT : `STARTING HTTP SERVER ON PORT ${port}`});
+            logging.info(apiReference, {EVENT : `STARTING HTTP SERVER ON PORT ${port}`});
             resolve();
         });
     });
@@ -42,7 +42,7 @@ function initializeServer() {
         })().then((data) => {
             resolve(data);
         }, (error) => {
-            logging.logError(apiReference, error);
+            logging.error(apiReference, error);
             reject(error);
         });
     })
@@ -58,10 +58,10 @@ function initializeConnection(connectionConfig, apiReference) {
     return new Promise((resolve, reject) => {
         Mongoose.connect(connectionConfig, {useNewUrlParser : true, useUnifiedTopology : true}, function(err, database) {
             if(err) {
-                logging.logError(apiReference, {EVENT : "MONGOOSE CONNECTION ERROR", ERROR : err});
+                logging.error(apiReference, {EVENT : "MONGOOSE CONNECTION ERROR", ERROR : err});
                 reject(err)
             }
-            logging.log(apiReference, {EVENT : "MONGOOSE CONNECTED SUCCESSFULLY"});
+            logging.info(apiReference, {EVENT : "MONGOOSE CONNECTED SUCCESSFULLY"});
             resolve(database)
         })
     });

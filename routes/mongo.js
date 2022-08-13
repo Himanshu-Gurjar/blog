@@ -1,4 +1,4 @@
-const logging           = require('../logging/logger');
+const logger           = require('../logging/loggerConfig').logger;
 const ObjectId          = require('mongodb').ObjectId;
 const constants         = require('../utils/constants');
 module.exports = class Blog {
@@ -10,11 +10,11 @@ module.exports = class Blog {
         return new Promise((resolve, reject) => {
             this.mongoCollection.find(filter).sort({createdAt : -1})
             .then(result => {
-                logging.log(apiReference, { EVENT: "GETTING DATA FOR BLOG", DATA: result, FILTER : filter}); 
+                logger.info(apiReference, { EVENT: "GETTING DATA FOR BLOG", DATA: result, FILTER : filter}); 
                 resolve(result)
             })
             .catch(err => {
-                logging.logError(apiReference, { DATA: filter, ERROR: err, EVENT: "ERROR IN GETTING DATA" });
+                logger.error(apiReference, { DATA: filter, ERROR: err, EVENT: "ERROR IN GETTING DATA" });
                 reject(err)
             })
         })
@@ -25,11 +25,11 @@ module.exports = class Blog {
             const blog = new this.mongoCollection(data)
             blog.save()
             .then(result => {
-                logging.log(apiReference, { EVENT: "INSERTING BLOG DATA ", DATA: result}); 
+                logger.info(apiReference, { EVENT: "INSERTING BLOG DATA ", DATA: result}); 
                 resolve(result)
             })
             .catch(err => {
-                logging.logError(apiReference, {ERROR: err, EVENT: "ERROR IN INSERTING BLOG DATA"  });
+                logger.error(apiReference, {ERROR: err, EVENT: "ERROR IN INSERTING BLOG DATA"  });
                 reject(err)
             })
         })
@@ -39,11 +39,11 @@ module.exports = class Blog {
         return new Promise((resolve, reject) => {
             this.mongoCollection.updateOne({_id : id}, {$set : dataToUpdate})
             .then(result => {
-                logging.log(apiReference, { EVENT: "UPDATING BLOG DATA", DATA: result}); 
+                logger.info(apiReference, { EVENT: "UPDATING BLOG DATA", DATA: result}); 
                 resolve(result)
             })
             .catch(err => {
-                logging.logError(apiReference, {ERROR: err, EVENT: "ERROR IN UPDATING BLOG DATA"  });
+                logger.error(apiReference, {ERROR: err, EVENT: "ERROR IN UPDATING BLOG DATA"  });
                 reject(err)
             })
         })
@@ -53,11 +53,11 @@ module.exports = class Blog {
         return new Promise((resolve, reject) => {
             this.mongoCollection.findByIdAndDelete(id)
             .then(result => {
-                logging.log(apiReference, { EVENT: "DATA DELETED", DATA : id});
+                logger.info(apiReference, { EVENT: "DATA DELETED", DATA : id});
                 resolve(result)
             })
             .catch(err => {
-                logging.logError(apiReference, {ERROR: err, EVENT: "ERROR IN DELETING DATA", DATA : id });
+                logger.error(apiReference, {ERROR: err, EVENT: "ERROR IN DELETING DATA", DATA : id });
                 reject(err);
             })
         })

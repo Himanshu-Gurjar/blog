@@ -3,13 +3,13 @@ const apiReferenceModule = "blogs"
 const Mongo              = require('./mongo');
 const Responses          = require('../utils/responses');
 const constants          = require('../utils/constants');
-const logging            = require('../logging/logger');
+const logger            = require('../logging/loggerConfig').logger;
 exports.getBlogs    = getBlogs;
 exports.getBlogById = getBlogById;
 exports.createBlog  = createBlog;
 exports.updateBlog  = updateBlog;
 exports.deleteBlog  = deleteBlog;
-
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 const mongo = new Mongo();
 const responses = new Responses();
 
@@ -23,7 +23,7 @@ async function getBlogs(req, res) {
         let data = await mongo.getData(apiReference, filter);    
         return responses.actionCompleteResponse(res, data);
     } catch (error) {
-        logging.logError(apiReference, {FILTER : filter, ERROR : error})
+        logger.error(apiReference, {FILTER : filter, ERROR : error})
         return responses.internalErrorMessage(res);
     }
 
@@ -39,7 +39,7 @@ async function getBlogById(req, res) {
         let data = await mongo.getData(apiReference, {_id : id})
         return responses.actionCompleteResponse(res, data);
     } catch (error) {
-        logging.logError(apiReference, {_ID : id, ERROR : error})
+        logger.error(apiReference, {_ID : id, ERROR : error})
         return responses.internalErrorMessage(res);
     }
 }
@@ -60,7 +60,7 @@ async function createBlog(req, res) {
         let result = await mongo.insert(apiReference, insertObj)
         return responses.actionCompleteResponse(res, {Id : result._id}, constants.responseMessages.BLOG_CREATED);
     } catch (error) {
-        logging.logError(apiReference, {DATA : insertObj, ERROR : error})
+        logger.error(apiReference, {DATA : insertObj, ERROR : error})
         return responses.internalErrorMessage(res);
     }
 }
@@ -71,6 +71,7 @@ async function updateBlog(req, res) {
         api: "update_blog"
     }
     try {
+        // await delay(3000) 
         let id = req.body.id;
         let dataToUpdate = {
             title : req.body.title,
@@ -84,7 +85,7 @@ async function updateBlog(req, res) {
         return responses.actionCompleteResponse(res, [], constants.responseMessages.DATA_UPDATED);
 
     } catch (error) {
-        logging.logError(apiReference, {REQ_BODY : req.body, ERROR : error});
+        logger.error(apiReference, {REQ_BODY : req.body, ERROR : error});
         return responses.internalErrorMessage(res);
     }   
 }
@@ -100,7 +101,7 @@ async function deleteBlog(req, res) {
         await mongo.delete(apiReference, id);
         return responses.actionCompleteResponse(res);
     } catch (error) {
-        logging.logError(apiReference, {REQ_BODY : req.params, ERROR : error});
+        logger.error(apiReference, {REQ_BODY : req.params, ERROR : error});
         return responses.internalErrorMessage(res);
     }
 

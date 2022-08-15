@@ -1,4 +1,4 @@
-const logging = require('../logging/logger');
+const logger = require('../logging/loggerConfig');
 
 exports.checkBlankField = checkBlankField;
 
@@ -16,7 +16,7 @@ function checkBlankField(arr, apiReference) {
         }
         arr[i] = arr[i].toString().trim();
         if (arr[i] === '' || arr[i] === "" || arr[i] === undefined) {
-            logging.log(apiReference, {EVENT: "Check blank failed", MAN_VALUES: arr});
+            logger.error(apiReference, {EVENT: "Check blank failed", MAN_VALUES: arr});
             return 1;
         }
     }

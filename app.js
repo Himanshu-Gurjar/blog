@@ -4,7 +4,7 @@ const startupService    = require('./services/startupservices');
 const blog              = require('./routes/blog');
 const blogvalidator     = require('./validators/blogPostValidator');
 const log4js            = require('log4js');
-const logger            = require('./logging/loggerConfig').logger;
+const logger            = require('./logging/loggerConfig').reqLogger;
 
 
 app = express();
@@ -13,7 +13,7 @@ app.set("view engine", "ejs");
 app.use(express.json())
 app.use(express.urlencoded({ extended : true}));
 
-  
+
 app.use(function (req, res, next) {
     // Website you wish to allow to connect
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -28,12 +28,19 @@ app.use(function (req, res, next) {
     next();
 });
 
+app.use((req, res, next) => {
+    if (process.env.NODE_ENV !== 'live') {      
+      logger.info(`REQ BODY: ${JSON.stringify(req.body)}, QUERY : ${JSON.stringify(req.query)}, PARAMS : ${JSON.stringify(req.params)}`)
+    }
+    req.start_time = new Date();
+    next()
+});
 
 app.use(
     log4js.connectLogger(logger, {
       level: "info",
       format: (req, res, format) => {
-        return format(`:method :url `)
+        return format(`:method :url Time : ${new Date() - req.start_time}ms`)
       }
     })
 );

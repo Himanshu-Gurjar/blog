@@ -2,7 +2,7 @@ const apiReferenceModule = 'startup';
 const Promise            = require('bluebird');
 const config             = require('config');
 const Mongoose           = require('mongoose');
-const logging            = require('../logging/loggerConfig').logger;
+const logger            = require('../logging/loggerConfig').logger;
 const http               = require('http');
 
 
@@ -19,7 +19,7 @@ function startHttpServer(port) {
             api : "start_http_server"
         }
         http.createServer(app).listen(port, function () {
-            logging.info(apiReference, {EVENT : `STARTING HTTP SERVER ON PORT ${port}`});
+            logger.info(apiReference, {EVENT : `STARTING HTTP SERVER ON PORT ${port}`});
             resolve();
         });
     });
@@ -40,9 +40,10 @@ function initializeServer() {
             let port = process.env.PORT || config.get('PORT');
             yield startHttpServer(port);
         })().then((data) => {
+            initializeLogger()
             resolve(data);
         }, (error) => {
-            logging.error(apiReference, error);
+            logger.error(apiReference, error);
             reject(error);
         });
     })
@@ -58,11 +59,18 @@ function initializeConnection(connectionConfig, apiReference) {
     return new Promise((resolve, reject) => {
         Mongoose.connect(connectionConfig, {useNewUrlParser : true, useUnifiedTopology : true}, function(err, database) {
             if(err) {
-                logging.error(apiReference, {EVENT : "MONGOOSE CONNECTION ERROR", ERROR : err});
+                logger.error(apiReference, {EVENT : "MONGOOSE CONNECTION ERROR", ERROR : err});
                 reject(err)
             }
-            logging.info(apiReference, {EVENT : "MONGOOSE CONNECTED SUCCESSFULLY"});
+            logger.info(apiReference, {EVENT : "MONGOOSE CONNECTED SUCCESSFULLY"});
             resolve(database)
         })
     });
+}
+
+
+function initializeLogger() {
+    if (process.env.NODE_ENV === 'live') {
+        logger.level = 'error' // if environment is live then log only errors otherwise all logs will be logged
+    }
 }

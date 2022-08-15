@@ -9,7 +9,7 @@ exports.getBlogById = getBlogById;
 exports.createBlog  = createBlog;
 exports.updateBlog  = updateBlog;
 exports.deleteBlog  = deleteBlog;
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+
 const mongo = new Mongo();
 const responses = new Responses();
 
@@ -71,7 +71,6 @@ async function updateBlog(req, res) {
         api: "update_blog"
     }
     try {
-        // await delay(3000) 
         let id = req.body.id;
         let dataToUpdate = {
             title : req.body.title,

@@ -1,5 +1,5 @@
 /node_modules
 package-lock.json
-config/default.json
-logs.log
+/config
+/logs
 request.log

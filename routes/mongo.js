@@ -1,65 +1,53 @@
-const logger           = require('../logging/loggerConfig').logger;
+const logger           = require("../logging/loggerConfig").logger;
 
-module.exports = class Blog {
-    constructor() {
-        this.mongoCollection = require('../models/blogs');
+module.exports = class CRUD {
+    constructor(collectionName) {
+        this.mongoCollection = collectionName;
     }
 
-    getData(apiReference, filter={}) {
-        return new Promise((resolve, reject) => {
-            this.mongoCollection.find(filter).sort({createdAt : -1})
-            .then(result => {
-                logger.debug(apiReference, { EVENT: "GETTING DATA FOR BLOG", DATA: result, FILTER : filter}); 
-                resolve(result)
-            })
-            .catch(err => {
-                logger.error(apiReference, { DATA: filter, ERROR: err, EVENT: "ERROR IN GETTING DATA" });
-                reject(err)
-            })
-        })
+    async getData(apiReference, filter={}) {
+        try {
+            const result = await this.mongoCollection.find(filter).sort({createdAt : -1})
+            logger.debug(apiReference, { EVENT: "GETTING DATA FOR", DATA: result, FILTER : filter}); 
+            return result
+        } catch (error) {
+            logger.error(apiReference, { DATA: filter, ERROR: error, EVENT: "ERROR IN GETTING DATA" });
+            throw error
+        }
     }
     
-    insert(apiReference, data) {
-        return new Promise((resolve, reject) => {
-            const blog = new this.mongoCollection(data)
-            blog.save()
-            .then(result => {
-                logger.debug(apiReference, { EVENT: "INSERTING BLOG DATA ", DATA: result}); 
-                resolve(result)
-            })
-            .catch(err => {
-                logger.error(apiReference, {ERROR: err, EVENT: "ERROR IN INSERTING BLOG DATA"  });
-                reject(err)
-            })
-        })
+    async insert(apiReference, data) {
+        try {
+            const collection = new this.mongoCollection(data)
+            const result = await collection.save()
+            logger.debug(apiReference, { EVENT: "INSERTING DATA ", DATA: result}); 
+            return result
+        } catch (error) {
+            logger.error(apiReference, {ERROR: error, EVENT: "ERROR IN INSERTING DATA"  });
+            throw error
+        }
     }
     
-    update(apiReference, dataToUpdate, id) {
-        return new Promise((resolve, reject) => {
-            this.mongoCollection.updateOne({_id : id}, {$set : dataToUpdate})
-            .then(result => {
-                logger.debug(apiReference, { EVENT: "UPDATING BLOG DATA", DATA: result}); 
-                resolve(result)
-            })
-            .catch(err => {
-                logger.error(apiReference, {ERROR: err, EVENT: "ERROR IN UPDATING BLOG DATA"  });
-                reject(err)
-            })
-        })
+    async update(apiReference, dataToUpdate, id) {
+        try {
+            const result = await this.mongoCollection.updateOne({_id : id}, {$set : dataToUpdate})
+            logger.debug(apiReference, { EVENT: "UPDATING DATA", DATA: result}); 
+            return result
+        } catch (error) {
+            logger.error(apiReference, {ERROR: error, EVENT: "ERROR IN UPDATING DATA"  });
+            throw error
+        }
     }
     
-    delete(apiReference, id) {
-        return new Promise((resolve, reject) => {
-            this.mongoCollection.findByIdAndDelete(id)
-            .then(result => {
-                logger.debug(apiReference, { EVENT: "DATA DELETED", DATA : id});
-                resolve(result)
-            })
-            .catch(err => {
-                logger.error(apiReference, {ERROR: err, EVENT: "ERROR IN DELETING DATA", DATA : id });
-                reject(err);
-            })
-        })
+    async delete(apiReference, id) {
+        try {
+            const result = this.mongoCollection.findByIdAndDelete(id)
+            logger.debug(apiReference, { EVENT: "DATA DELETED", DATA : id});
+            return result
+        } catch (error) {
+            logger.error(apiReference, {ERROR: error, EVENT: "ERROR IN DELETING DATA", DATA : id });
+            throw error
+        }
     }
 }
 

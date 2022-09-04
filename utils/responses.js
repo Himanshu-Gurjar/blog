@@ -1,5 +1,5 @@
 
-const constants  = require('./constants');
+const constants  = require("./constants");
 module.exports = class Responses {
 
     getResponse(message, status, data) {
@@ -21,22 +21,30 @@ module.exports = class Responses {
         res.send(JSON.stringify(this.response));
     }
 
-    noDataFound(res) {
-        this.response = this.getResponse(constants.responseMessages.NO_DATA_FOUND, constants.responseFlags.NO_DATA_FOUND);
+    noDataFound(res, message) {
+        this.response = this.getResponse(message ||constants.responseMessages.NO_DATA_FOUND, 
+                                                   constants.responseFlags.NO_DATA_FOUND);
         res.send(JSON.stringify(this.response));
     }
 
     sendError(res, message) {
-        this.response = this.getResponse(message || constants.responseMessages.ERROR,
-                                                    constants.responseFlags.ERROR);
+        this.response = this.getResponse(message || constants.responseMessages.BAD_REQUEST,
+                                                    constants.responseFlags.BAD_REQUEST);
     
         res.send(JSON.stringify(this.response));
     }
 
-    validationError(res, message) {
-        this.response = this.getResponse(message || constants.responseMessages.VALIDATION_ERROR,
+    validationError(res, err) {
+        this.response = this.getResponse(err || constants.responseMessages.VALIDATION_ERROR,
                                                     constants.responseFlags.VALIDATION_ERROR);
         
+        res.send(JSON.stringify(this.response));
+    }
+
+    unauthorizedError(res, err) {
+        this.response = this.getResponse(err || constants.responseMessages.UNAUTHORIZED,
+                                                constants.responseFlags.UNAUTHORIZED);
+
         res.send(JSON.stringify(this.response));
     }
 

@@ -1,9 +1,9 @@
-const apiReferenceModule = 'startup';
-const Promise            = require('bluebird');
-const config             = require('config');
-const Mongoose           = require('mongoose');
-const logger            = require('../logging/loggerConfig').logger;
-const http               = require('http');
+const apiReferenceModule = "startup";
+const Promise            = require("bluebird");
+const config             = require("config");
+const Mongoose           = require("mongoose");
+const logger             = require("../logging/loggerConfig").logger;
+const http               = require("http");
 
 
 exports.initializeServer = initializeServer;
@@ -12,7 +12,7 @@ exports.initializeServer = initializeServer;
  * 
  * @param {number} port The port on which server will listen.
  */
-function startHttpServer(port) {
+function startHttpServer(port, app) {
     return new Promise((resolve, reject) => {
         let apiReference = {
             module : apiReferenceModule, 
@@ -28,17 +28,17 @@ function startHttpServer(port) {
 /**
  * Initialize database connection and http server
  */
-function initializeServer() {
+function initializeServer(app) {
     return new Promise((resolve, reject) => {
         let apiReference = {
             module: apiReferenceModule,
             api: "initialize"
         };
         Promise.coroutine(function* () {
-            let connectionConfig = config.get('databaseSettings.mongo_db_connection');
+            let connectionConfig = config.get("databaseSettings.mongo_db_connection");
             yield initializeConnection(connectionConfig, apiReference);
-            let port = process.env.PORT || config.get('PORT');
-            yield startHttpServer(port);
+            let port = process.env.PORT || config.get("PORT");
+            yield startHttpServer(port, app);
         })().then((data) => {
             initializeLogger()
             resolve(data);
@@ -70,7 +70,7 @@ function initializeConnection(connectionConfig, apiReference) {
 
 
 function initializeLogger() {
-    if (process.env.NODE_ENV === 'live') {
-        logger.level = 'error' // if environment is live then log only errors otherwise all logs will be logged
+    if (process.env.NODE_ENV === "live") {
+        logger.level = "error" // if environment is live then log only errors otherwise all logs will be logged
     }
 }

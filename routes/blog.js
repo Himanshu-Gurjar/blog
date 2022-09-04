@@ -1,16 +1,18 @@
 
 const apiReferenceModule = "blogs"
-const Mongo              = require('./mongo');
-const Responses          = require('../utils/responses');
-const constants          = require('../utils/constants');
-const logger            = require('../logging/loggerConfig').logger;
+const Mongo              = require("./mongo");
+const Responses          = require("../utils/responses");
+const constants          = require("../utils/constants");
+const logger             = require("../logging/loggerConfig").logger;
+const collection         = require("../models/blogs");
+const _                  = require("underscore")
 exports.getBlogs    = getBlogs;
 exports.getBlogById = getBlogById;
 exports.createBlog  = createBlog;
 exports.updateBlog  = updateBlog;
 exports.deleteBlog  = deleteBlog;
 
-const mongo = new Mongo();
+const mongo = new Mongo(collection);
 const responses = new Responses();
 
 async function getBlogs(req, res) {
@@ -20,7 +22,10 @@ async function getBlogs(req, res) {
     }
     let filter = req.query.filter || {}
     try {
-        let data = await mongo.getData(apiReference, filter);    
+        let data = await mongo.getData(apiReference, filter); 
+
+        if(_.isEmpty(data)) return responses.noDataFound(res);
+
         return responses.actionCompleteResponse(res, data);
     } catch (error) {
         logger.error(apiReference, {FILTER : filter, ERROR : error})
@@ -37,6 +42,9 @@ async function getBlogById(req, res) {
     let id = req.query.id;
     try {
         let data = await mongo.getData(apiReference, {_id : id})
+
+        if(_.isEmpty(data)) return responses.noDataFound(res);
+        
         return responses.actionCompleteResponse(res, data);
     } catch (error) {
         logger.error(apiReference, {_ID : id, ERROR : error})
@@ -53,7 +61,8 @@ async function createBlog(req, res) {
     let insertObj = {
         title : req.body.title,
         description : req.body.description ? req.body.description : "",
-        content : req.body.content
+        content : req.body.content,
+        createdBy : res.locals.user // when user is getting authenticated at that time userEmail is appended to request 
     }
 
     try {
@@ -79,7 +88,7 @@ async function updateBlog(req, res) {
         }
         let result = await mongo.update(apiReference, dataToUpdate, id)
         if(result && result.matchedCount === 0) {
-            return responses.noDataFound(res);
+            return responses.sendError(res, constants.responseMessages.ID_NOT_EXIST);
         }
         return responses.actionCompleteResponse(res, [], constants.responseMessages.DATA_UPDATED);
 
